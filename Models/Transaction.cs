@@ -2,5 +2,6 @@
 {
     public class Transaction
     {
+        public int MyProperty { get; set; }
     }
 }
