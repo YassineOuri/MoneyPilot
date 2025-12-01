@@ -1,6 +1,8 @@
 @MoneyPilot_HostAddress = http://localhost:5292
 
-GET {{MoneyPilot_HostAddress}}/weatherforecast/
+GET {{MoneyPilot_HostAddress}}/api/accounts
 Accept: application/json
+
+
 
 ###
