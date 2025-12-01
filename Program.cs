@@ -23,6 +23,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddSwaggerGen(options =>
 {
+    
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "Money Pilot API", Version = "v1" });
 });
 

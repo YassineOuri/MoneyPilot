@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Swashbuckle.AspNetCore.Annotations;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace MoneyPilot.Models
@@ -6,6 +7,7 @@ namespace MoneyPilot.Models
     public class Account
     {
         [Key]
+        [SwaggerIgnore]
         public int Id { get; set; }
         [Required]
         public required string Name { get; set; }
