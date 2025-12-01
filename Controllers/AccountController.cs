@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyPilot.Data;
+using MoneyPilot.DTO;
 using MoneyPilot.Models;
 using System.Security.Principal;
 
@@ -8,7 +9,7 @@ namespace MoneyPilot.Controllers
 {
     [Route("api/accounts")]
     [ApiController]
-    public class AccountController : Controller
+    public class AccountController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
 
@@ -26,9 +27,15 @@ namespace MoneyPilot.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> addAccount([FromBody] Account account)
+        public async Task<IActionResult> addAccount([FromBody] AccountDTO account)
         {   
-            
+
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+  
             _context.Add(account);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(addAccount), new { id = account.Id }, account);
@@ -37,7 +44,7 @@ namespace MoneyPilot.Controllers
 
 
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> updateAccount([FromBody] Account accountToUpdate, int id)
         {   
            
@@ -55,7 +62,7 @@ namespace MoneyPilot.Controllers
         }
 
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> deleteAccount(int id)
         {
             var account = await _context.FindAsync<Account>(id);

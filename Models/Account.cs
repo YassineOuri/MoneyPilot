@@ -7,7 +7,7 @@ namespace MoneyPilot.Models
     public class Account
     {
         [Key]
-        [SwaggerIgnore]
+        
         public int Id { get; set; }
         [Required]
         public required string Name { get; set; }
