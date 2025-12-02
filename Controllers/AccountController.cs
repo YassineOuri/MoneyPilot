@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyPilot.Data;
 using MoneyPilot.DTO;
@@ -13,11 +14,13 @@ namespace MoneyPilot.Controllers
     {
         private readonly ApplicationDbContext _context;
 
+        
         public AccountController(ApplicationDbContext context)
         {
             _context = context;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<List<Account>>> GetAccounts()
         {
@@ -25,7 +28,7 @@ namespace MoneyPilot.Controllers
             return Ok(accounts);
         }
 
-
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> addAccount([FromBody] AccountDTO account)
         {   
@@ -42,8 +45,7 @@ namespace MoneyPilot.Controllers
         }
 
 
-
-
+        [Authorize]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> updateAccount([FromBody] Account accountToUpdate, int id)
         {   
@@ -61,7 +63,7 @@ namespace MoneyPilot.Controllers
             return CreatedAtAction(nameof(updateAccount), new { id = exsistingAccount.Id }, exsistingAccount);
         }
 
-
+        [Authorize]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> deleteAccount(int id)
         {
