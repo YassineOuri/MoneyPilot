@@ -5,8 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 using MoneyPilot.Data;
 using MoneyPilot.DTO;
 using MoneyPilot.Models;
+using MoneyPilot.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,10 +20,12 @@ namespace MoneyPilot.Controllers
     {
 
         private static ApplicationDbContext _context;
+        private static BcryptService _bcryptService;
 
-        public AuthController(ApplicationDbContext context)
+        public AuthController(ApplicationDbContext context, BcryptService bcryptService)
         {
             _context = context;
+            _bcryptService = bcryptService;
         }
 
         [HttpPost("login")]
@@ -38,7 +42,7 @@ namespace MoneyPilot.Controllers
                 return NotFound();
             }
 
-            if(user.Password != existingUser.Password)
+            if(!_bcryptService.ValidatePassword(user.Password, existingUser.Password))
             {
                 return BadRequest("credentials are invalid");
             }
@@ -47,6 +51,30 @@ namespace MoneyPilot.Controllers
             return Ok(new { user, token });
         }
 
+
+
+        [HttpPost("register")]
+        public async Task<IActionResult> register(UserRegister user)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if(user == null)
+            {
+                return BadRequest("Please submit the user to register");
+
+            }
+
+            user.Password = _bcryptService.HashPassword(user.Password);
+            _context.Users.Add((User)(user!));
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(register), new { email = user.Email }, user);
+
+
+        }
 
         private string GenerateJwtToken(string email)
         {
