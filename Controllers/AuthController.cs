@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using MoneyPilot.Data;
 using MoneyPilot.DTO;
@@ -12,6 +11,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace MoneyPilot.Controllers
 {
     [Route("api/auth")]
@@ -19,13 +19,13 @@ namespace MoneyPilot.Controllers
     public class AuthController : ControllerBase
     {
 
-        private static ApplicationDbContext _context;
-        private static BcryptService _bcryptService;
+        private readonly ApplicationDbContext _context;
+        private readonly PasswordService _passwordService;
 
-        public AuthController(ApplicationDbContext context, BcryptService bcryptService)
+        public AuthController(ApplicationDbContext context, PasswordService passwordService)
         {
             _context = context;
-            _bcryptService = bcryptService;
+            _passwordService = passwordService;
         }
 
         [HttpPost("login")]
@@ -42,13 +42,19 @@ namespace MoneyPilot.Controllers
                 return NotFound();
             }
 
-            if(!_bcryptService.ValidatePassword(user.Password, existingUser.Password))
+            if(!_passwordService.ValidatePassword(user.Password, existingUser.Password))
             {
-                return BadRequest("credentials are invalid");
+                return BadRequest("Credentials are invalid");
             }
 
             var token = GenerateJwtToken(user.Email);
-            return Ok(new { user, token });
+            var loggedInUser = new
+            {
+                existingUser.FirstName,
+                existingUser.LastName,
+                existingUser.Email
+            };
+            return Ok(new { loggedInUser , token });
         }
 
 
@@ -61,17 +67,30 @@ namespace MoneyPilot.Controllers
                 return BadRequest(ModelState);
             }
 
-            if(user == null)
+            if (user == null)
             {
                 return BadRequest("Please submit the user to register");
-
             }
 
-            user.Password = _bcryptService.HashPassword(user.Password);
-            _context.Users.Add((User)(user!));
+            var existingUser = await _context.Users.FirstOrDefaultAsync(x => x.Email == user.Email);
+            if(existingUser != null)
+            {
+                return BadRequest("User with this email already exists");
+            }
+
+
+            var newUser = new User
+            (
+                user.FirstName,
+                user.LastName,
+                user.Email,
+                _passwordService.HashPassword(user.Password)
+            );
+
+            _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(register), new { email = user.Email }, user);
+            return CreatedAtAction(nameof(register), "User registered successfully" , newUser);
 
 
         }

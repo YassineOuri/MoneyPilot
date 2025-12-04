@@ -2,7 +2,7 @@
 
 namespace MoneyPilot.Services
 {
-    public class BcryptService
+    public class PasswordService
     {
         public string HashPassword(string password)
         {

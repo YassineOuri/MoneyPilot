@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace MoneyPilot.DTO
 {
@@ -9,6 +10,7 @@ namespace MoneyPilot.DTO
         public string Email { get; set; } = string.Empty;
 
         [Required]
+        
         public string Password { get; set; } = string.Empty;
     }
 }
