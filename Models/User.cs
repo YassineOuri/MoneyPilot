@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MoneyPilot.Models
 {
@@ -12,6 +13,10 @@ namespace MoneyPilot.Models
 
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+
+        [InverseProperty("Owner")]
+        
+        public ICollection<Account> accounts { get; set; } = new List<Account>();
 
 
         public User()

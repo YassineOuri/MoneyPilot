@@ -1,5 +1,6 @@
 ﻿using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace MoneyPilot.Models
@@ -10,17 +11,36 @@ namespace MoneyPilot.Models
         
         public int Id { get; set; }
         [Required]
-        public required string Name { get; set; }
+        public string Name { get; set; }
         [Required]
-        public required string Color { get; set; }
-        public required AccountType Type { get; set; } = AccountType.Cash;
+        public string Color { get; set; }
+        public AccountType Type { get; set; } = AccountType.Cash;
         public double InitialAmount { get; set; } = 0;
 
       
-        public AccountCurrency currency { get; set; } = AccountCurrency.USD;
+        public AccountCurrency Currency { get; set; } = AccountCurrency.USD;
+
+        [Required]
+        public int OwnerId { get; set; }
+
+        [ForeignKey("OwnerId")]
+        [JsonIgnore]
+        public User Owner { get; set; }
 
 
+        public Account()
+        {
 
+        }
 
+        public Account(string name, string color, AccountType type, double initialAmount, AccountCurrency currency, int ownerId)
+        {
+            Name = name;
+            Color = color;
+            Type = type;
+            InitialAmount = initialAmount;
+            Currency = currency;
+            OwnerId = ownerId;
+        }
     }
 }

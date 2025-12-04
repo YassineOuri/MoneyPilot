@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MoneyPilot.Data;
 using MoneyPilot.DTO;
 using MoneyPilot.Models;
+using System.Security.Claims;
 using System.Security.Principal;
 
 namespace MoneyPilot.Controllers
@@ -32,16 +33,32 @@ namespace MoneyPilot.Controllers
         [HttpPost]
         public async Task<IActionResult> addAccount([FromBody] AccountDTO account)
         {   
-
             if(!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-  
-            _context.Add(account);
+            ClaimsPrincipal currentUser = User;
+            var userEmail = currentUser.FindFirstValue(ClaimTypes.NameIdentifier);
+            var loggedInUser = await _context.Users.FindAsync(account.OwnerID);
+            if(loggedInUser!.Email != userEmail)
+            {
+                return Unauthorized("You are not authorized to add an account to this user");
+            }
+
+            var newAccount = new Account
+            (
+                account.Name,
+                account.Color,
+                account.Type,
+                account.InitialAmount,
+                account.currency,
+                account.OwnerID
+            );
+
+            _context.Accounts.Add(newAccount);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(addAccount), new { id = account.Id }, account);
+            return CreatedAtAction(nameof(addAccount), new { id = newAccount.Id }, newAccount);
         }
 
 
@@ -57,7 +74,7 @@ namespace MoneyPilot.Controllers
             exsistingAccount.Color = accountToUpdate.Color;
             exsistingAccount.InitialAmount = accountToUpdate.InitialAmount;
             exsistingAccount.Type = accountToUpdate.Type;
-            exsistingAccount.currency = accountToUpdate.currency;
+            exsistingAccount.Currency = accountToUpdate.Currency;
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(updateAccount), new { id = exsistingAccount.Id }, exsistingAccount);

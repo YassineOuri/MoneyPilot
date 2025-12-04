@@ -32,5 +32,8 @@ namespace MoneyPilot.DTO
         [Required]
         [EnumDataType(typeof(AccountCurrency), ErrorMessage = "Account currency is invalid")]
         public AccountCurrency currency { get; set; } = AccountCurrency.USD;
+
+        [Required]
+        public int OwnerID { get; set; }
     }
 }
