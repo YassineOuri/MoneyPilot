@@ -37,12 +37,8 @@ namespace MoneyPilot.Controllers
             }
 
             var existingUser =  await _context.Users.FirstOrDefaultAsync(x => x.Email == user.Email);
-            if(existingUser == null)
-            {
-                return NotFound();
-            }
 
-            if(!_passwordService.ValidatePassword(user.Password, existingUser.Password))
+            if(existingUser == null || !_passwordService.ValidatePassword(user.Password, existingUser.Password))
             {
                 return BadRequest("Credentials are invalid");
             }
