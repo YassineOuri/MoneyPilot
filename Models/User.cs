@@ -17,7 +17,11 @@ namespace MoneyPilot.Models
 
         [InverseProperty("Owner")]
         
-        public ICollection<Account> accounts { get; set; } = new List<Account>();
+        public ICollection<Account> accounts { get; set; } = [];
+
+
+        [InverseProperty("Owner")]
+        public ICollection<Transaction> Transactions { get; set; } = [];
 
 
         public User()

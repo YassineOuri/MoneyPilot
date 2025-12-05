@@ -43,7 +43,7 @@ namespace MoneyPilot.Controllers
                 return BadRequest("Credentials are invalid");
             }
 
-            var token = GenerateJwtToken(user.Email);
+            var token = GenerateJwtToken(existingUser.Email);
             var loggedInUser = new
             {
                 existingUser.FirstName,
@@ -97,8 +97,9 @@ namespace MoneyPilot.Controllers
             var claims = new[]
             {
                new Claim(JwtRegisteredClaimNames.Sub, email),
+             
                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+            }; 
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

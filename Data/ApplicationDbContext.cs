@@ -12,7 +12,10 @@ namespace MoneyPilot.Data
 
 
         public DbSet<Account> Accounts { get; set; }
+
         public DbSet<User> Users { get; set; }
+
+        public DbSet<Transaction> Transactions { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -21,7 +24,25 @@ namespace MoneyPilot.Data
                 .HasMany(e => e.accounts)
                 .WithOne(e => e.Owner)
                 .HasForeignKey(e => e.OwnerId)
-                .IsRequired(true); 
+                .IsRequired(true)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasMany(e => e.Transactions)
+                .WithOne(e => e.Owner)
+                .HasForeignKey(e => e.OwnerId)
+                .IsRequired(true)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Account>()
+                .HasMany(e => e.Transactions)
+                .WithOne(e => e.Account)
+                .HasForeignKey(e => e.AccountId)
+                .IsRequired(true)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+
         }
     }
     
