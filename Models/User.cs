@@ -1,6 +1,7 @@
 ﻿using MoneyPilot.DTO;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MoneyPilot.Models
 {
@@ -13,15 +14,18 @@ namespace MoneyPilot.Models
         public string LastName { get; set; } = string.Empty;
 
         public string Email { get; set; } = string.Empty;
+
+        [JsonIgnore]
         public string Password { get; set; } = string.Empty;
 
         [InverseProperty("Owner")]
-        
-        public ICollection<Account> accounts { get; set; } = [];
+        [JsonIgnore]
+        public ICollection<Account>? Accounts { get; set; } = [];
 
 
         [InverseProperty("Owner")]
-        public ICollection<Transaction> Transactions { get; set; } = [];
+        [JsonIgnore]
+        public ICollection<Transaction>? Transactions { get; set; } = [];
 
 
         public User()

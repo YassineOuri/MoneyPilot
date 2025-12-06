@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MoneyPilot.Models
 {
@@ -13,11 +14,13 @@ namespace MoneyPilot.Models
         public int AccountId { get; set; }
 
         [ForeignKey("AccountId")]
+        [JsonIgnore]
         public Account? Account { get; set; }
 
         public int OwnerId { get; set; }
 
         [ForeignKey("OwnerId")]
+        [JsonIgnore]
         public User? Owner { get; set; }
 
         public DateTime DateTime { get; set; } = DateTime.Now;

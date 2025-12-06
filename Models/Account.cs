@@ -28,7 +28,8 @@ namespace MoneyPilot.Models
         public User Owner { get; set; }
 
         [InverseProperty("Account")]
-        public ICollection<Transaction> Transactions { get; set; } = [];
+        [JsonIgnore]
+        public ICollection<Transaction>? Transactions { get; set; } = [];
 
 
         public Account()

@@ -1,10 +1,10 @@
-using MoneyPilot.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using MoneyPilot.Models;
 using Swashbuckle.AspNetCore.Annotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace MoneyPilot.DTO
+namespace MoneyPilot.DTO.Transactions
 {
-    public class StoreTransactionDTO
+    public class UpdateTransactionDTO
     {
         [SwaggerIgnore]
         public int Id { get; set; }
@@ -23,8 +23,7 @@ namespace MoneyPilot.DTO
         [MaxLength(500, ErrorMessage = "Note cannot exceed 500 characters")]
         public string Note { get; set; } = string.Empty;
 
-       
+
         public DateTime? DateTime { get; set; }
     }
 }
-

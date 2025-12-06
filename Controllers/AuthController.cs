@@ -45,7 +45,8 @@ namespace MoneyPilot.Controllers
 
             var token = GenerateJwtToken(existingUser.Email);
             var loggedInUser = new
-            {
+            {   
+                existingUser.Id,
                 existingUser.FirstName,
                 existingUser.LastName,
                 existingUser.Email
@@ -90,6 +91,8 @@ namespace MoneyPilot.Controllers
 
 
         }
+
+       
 
         private string GenerateJwtToken(string email)
         {

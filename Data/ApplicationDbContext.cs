@@ -21,7 +21,7 @@ namespace MoneyPilot.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
-                .HasMany(e => e.accounts)
+                .HasMany(e => e.Accounts)
                 .WithOne(e => e.Owner)
                 .HasForeignKey(e => e.OwnerId)
                 .IsRequired(true)

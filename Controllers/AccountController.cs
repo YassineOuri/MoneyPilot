@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MoneyPilot.Data;
 using MoneyPilot.DTO;
 using MoneyPilot.Models;
+using MoneyPilot.Services;
 using System.Security.Claims;
 using System.Security.Principal;
 
@@ -14,11 +15,13 @@ namespace MoneyPilot.Controllers
     public class AccountController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly AuthService _authService;
 
         
-        public AccountController(ApplicationDbContext context)
+        public AccountController(ApplicationDbContext context, AuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
         [Authorize]
@@ -31,7 +34,7 @@ namespace MoneyPilot.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> addAccount([FromBody] AccountDTO account)
+        public async Task<IActionResult> addAccount([FromBody] AccountDTO account) 
         {   
             if(!ModelState.IsValid)
             {
@@ -39,12 +42,7 @@ namespace MoneyPilot.Controllers
             }
 
             ClaimsPrincipal currentUser = User;
-            var userEmail = currentUser.FindFirstValue(ClaimTypes.NameIdentifier);
-            var loggedInUser = await _context.Users.FindAsync(account.OwnerID);
-            if(loggedInUser!.Email != userEmail)
-            {
-                return Unauthorized("You are not authorized to add an account to this user");
-            }
+            int userId = await _authService.getCurrentUserID(currentUser);
 
             var newAccount = new Account
             (
@@ -53,7 +51,7 @@ namespace MoneyPilot.Controllers
                 account.Type,
                 account.InitialAmount,
                 account.currency,
-                account.OwnerID
+                userId
             );
 
             _context.Accounts.Add(newAccount);

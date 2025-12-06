@@ -43,7 +43,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Register Services
 builder.Services.AddSingleton<PasswordService>();
-builder.Services.AddSingleton<AuthService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TransactionService>();
 
 // JSON Enum Converter Integration
 builder.Services.AddControllers()
