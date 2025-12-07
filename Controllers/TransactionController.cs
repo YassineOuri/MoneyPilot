@@ -28,6 +28,14 @@ namespace MoneyPilot.Controllers
 
         public async Task<ActionResult<List<Transaction>>> GetTransactions(int UserId)
         {
+            ClaimsPrincipal loggedInUser = User;
+            int loggedInUserId = await _authService.getCurrentUserID(loggedInUser);
+
+            if(loggedInUserId != UserId)
+            {
+                return Unauthorized("You are not authorized to perform this action");
+            }
+
             var transactions = await _context.Transactions.Where(t => t.OwnerId == UserId).ToListAsync<Transaction>();
 
             return Ok(transactions);
@@ -114,15 +122,43 @@ namespace MoneyPilot.Controllers
                 return Unauthorized("You are not authorized to perform actions on this transaction");
             }
 
-            existingTransaction.Amount = transactionToUpdate.Amount;
-            existingTransaction.AccountId = transactionToUpdate.AccountId;
-            existingTransaction.TransactionType = transactionToUpdate.TransactionType;
-            existingTransaction.Note = transactionToUpdate.Note;
-            existingTransaction.DateTime = transactionToUpdate.DateTime ?? existingTransaction.DateTime;
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                using var databaseTransaction = _context.Database.BeginTransaction();
 
-            return CreatedAtAction(nameof(updateTransaction), new { existingTransaction.Id }, existingTransaction);
+                await _transactionService.DenyTransaction(existingTransaction);
+
+                existingTransaction.Amount = transactionToUpdate.Amount;
+                existingTransaction.AccountId = transactionToUpdate.AccountId;
+                existingTransaction.TransactionType = transactionToUpdate.TransactionType;
+                existingTransaction.Note = transactionToUpdate.Note;
+                existingTransaction.DateTime = transactionToUpdate.DateTime ?? existingTransaction.DateTime;
+
+                await _transactionService.ApplyTransaction(existingTransaction);
+
+                await _context.SaveChangesAsync();
+                await databaseTransaction.CommitAsync();
+
+                return CreatedAtAction(nameof(updateTransaction), new { existingTransaction.Id }, existingTransaction);
+
+
+
+            } catch (Exception e)
+            {
+                if (_context.Database.CurrentTransaction != null)
+                {
+                    await _context.Database.CurrentTransaction.RollbackAsync();
+                }
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    message = "Something went wrong",
+                    error = e.Message
+                });
+            }
+
+            
 
         }
 

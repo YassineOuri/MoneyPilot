@@ -25,7 +25,7 @@ namespace MoneyPilot.Models
 
         [ForeignKey("OwnerId")]
         [JsonIgnore]
-        public User Owner { get; set; }
+        public User? Owner { get; set; }
 
         [InverseProperty("Account")]
         [JsonIgnore]

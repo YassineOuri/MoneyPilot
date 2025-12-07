@@ -34,7 +34,7 @@ namespace MoneyPilot.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> addAccount([FromBody] AccountDTO account) 
+        public async Task<IActionResult> AddAccount([FromBody] AccountDTO account) 
         {   
             if(!ModelState.IsValid)
             {
@@ -50,23 +50,24 @@ namespace MoneyPilot.Controllers
                 account.Color,
                 account.Type,
                 account.InitialAmount,
-                account.currency,
+                account.Currency,
                 userId
             );
 
             _context.Accounts.Add(newAccount);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(addAccount), new { id = newAccount.Id }, newAccount);
+            return CreatedAtAction(nameof(AddAccount), new { id = newAccount.Id }, newAccount);
         }
 
 
         [Authorize]
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> updateAccount([FromBody] Account accountToUpdate, int id)
+        public async Task<IActionResult> UpdateAccount([FromBody] AccountDTO accountToUpdate, int id)
         {   
            
             var exsistingAccount = await _context.FindAsync<Account>(id);
             if (exsistingAccount == null) return NotFound("Requested account not found");
+
 
             exsistingAccount.Name = accountToUpdate.Name;
             exsistingAccount.Color = accountToUpdate.Color;
@@ -75,7 +76,7 @@ namespace MoneyPilot.Controllers
             exsistingAccount.Currency = accountToUpdate.Currency;
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(updateAccount), new { id = exsistingAccount.Id }, exsistingAccount);
+            return CreatedAtAction(nameof(UpdateAccount), new { id = exsistingAccount.Id }, exsistingAccount);
         }
 
         [Authorize]
