@@ -86,13 +86,20 @@ namespace MoneyPilot.Controllers
                     return Unauthorized("You are not authorized to add transactions to this account");
                 }
 
+                var category = await _context.Categories.FindAsync(transaction.CategoryId);
+                if (category == null)
+                {
+                    return NotFound("Category not found");
+                }
+
                 var newTransaction = new Transaction(
                     transaction.Amount,
                     transaction.AccountId,
                     userId,
                     transaction.DateTime ?? DateTime.Now,
                     transaction.TransactionType,
-                    transaction.Note
+                    transaction.Note,
+                    transaction.CategoryId
                     );
 
                 using var databaseTransaction = _context.Database.BeginTransaction();
@@ -140,6 +147,11 @@ namespace MoneyPilot.Controllers
                 return Unauthorized("You are not authorized to perform actions on this transaction");
             }
 
+            var category = await _context.Categories.FindAsync(transactionToUpdate.CategoryId);
+            if (category == null)
+            {
+                return NotFound("Category not found");
+            }
 
             try
             {
@@ -149,6 +161,7 @@ namespace MoneyPilot.Controllers
 
                 existingTransaction.Amount = transactionToUpdate.Amount;
                 existingTransaction.AccountId = transactionToUpdate.AccountId;
+                existingTransaction.CategoryId = transactionToUpdate.CategoryId;
                 existingTransaction.TransactionType = transactionToUpdate.TransactionType;
                 existingTransaction.Note = transactionToUpdate.Note;
                 existingTransaction.DateTime = transactionToUpdate.DateTime ?? existingTransaction.DateTime;

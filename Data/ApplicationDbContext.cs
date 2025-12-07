@@ -17,6 +17,8 @@ namespace MoneyPilot.Data
 
         public DbSet<Transaction> Transactions { get; set; }
 
+        public DbSet<Category> Categories { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -40,6 +42,22 @@ namespace MoneyPilot.Data
                 .HasForeignKey(e => e.AccountId)
                 .IsRequired(true)
                 .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<Category>()
+                .HasMany(e => e.Transactions)
+                .WithOne(e => e.Category)
+                .HasForeignKey(e => e.CategoryId)
+                .IsRequired(true)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<Category>()
+                .HasMany(e => e.SubCategories)
+                .WithOne(e => e.ParentCategory)
+                .HasForeignKey(e => e.ParentCategoryId)
+                .IsRequired(true)
+                .OnDelete(DeleteBehavior.Cascade);
 
 
 

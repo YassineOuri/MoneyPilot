@@ -1,4 +1,4 @@
-﻿namespace MoneyPilot.Models
+﻿namespace MoneyPilot.Enums
 {
     public enum AccountType
     {

@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MoneyPilot.Models;
+using MoneyPilot.Enums;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 using System.Net.NetworkInformation;

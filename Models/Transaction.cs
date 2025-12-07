@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MoneyPilot.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
@@ -29,7 +30,13 @@ namespace MoneyPilot.Models
 
         public string Note { get; set; } = string.Empty;
 
-        public Transaction(double amount, int accountId, int ownerId, DateTime dateTime, TransactionType transactionType, string note)
+
+        public int CategoryId { get; set; }
+
+        [ForeignKey("CategoryId")]
+        public Category? Category { get; set; }
+
+        public Transaction(double amount, int accountId, int ownerId, DateTime dateTime, TransactionType transactionType, string note, int categoryId)
         {
             Amount = amount;
             AccountId = accountId;
@@ -37,6 +44,7 @@ namespace MoneyPilot.Models
             DateTime = dateTime;
             TransactionType = transactionType;
             Note = note;
+            CategoryId = categoryId;
         }
     }
 

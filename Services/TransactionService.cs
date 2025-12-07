@@ -1,4 +1,5 @@
 ﻿using MoneyPilot.Data;
+using MoneyPilot.Enums;
 using MoneyPilot.Models;
 using System.Threading.Tasks;
 

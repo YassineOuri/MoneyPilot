@@ -1,6 +1,6 @@
-using MoneyPilot.Models;
 using System.ComponentModel.DataAnnotations;
 using Swashbuckle.AspNetCore.Annotations;
+using MoneyPilot.Enums;
 
 namespace MoneyPilot.DTO.Transactions
 {
@@ -15,6 +15,10 @@ namespace MoneyPilot.DTO.Transactions
 
         [Required(ErrorMessage = "Account ID is required")]
         public required int AccountId { get; set; }
+
+
+        [Required(ErrorMessage = "Category ID is required")]
+        public required int CategoryId { get; set; }
 
         [Required(ErrorMessage = "Transaction type is required")]
         [EnumDataType(typeof(TransactionType), ErrorMessage = "Transaction type must be either EXPENSE or INCOME")]
