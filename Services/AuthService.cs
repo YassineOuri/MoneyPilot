@@ -29,5 +29,15 @@ namespace MoneyPilot.Services
             return loggedInUser!.Id ;
 
         }
+
+        public async Task<bool> ValidateUserOwnership(ClaimsPrincipal user , int resourceOwnerId)
+        {
+            int loggedInUserId = await getCurrentUserID(user);
+            return (loggedInUserId == resourceOwnerId);
+        }
+
+        
+
+
     }
 }

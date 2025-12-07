@@ -28,7 +28,10 @@ namespace MoneyPilot.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Account>>> GetAccounts()
         {
-            List<Account> accounts = await _context.Accounts.ToListAsync();
+            ClaimsPrincipal currentUser = User;
+            int userId = await _authService.getCurrentUserID(currentUser);
+            
+            List<Account> accounts = await _context.Accounts.Where(a => a.OwnerId == userId).ToListAsync();
             return Ok(accounts);
         }
 
@@ -68,6 +71,10 @@ namespace MoneyPilot.Controllers
             var exsistingAccount = await _context.FindAsync<Account>(id);
             if (exsistingAccount == null) return NotFound("Requested account not found");
 
+            if (!await _authService.ValidateUserOwnership(User, exsistingAccount.OwnerId))
+            {
+                return Unauthorized("You are not authorized to perform actions on this account");
+            }
 
             exsistingAccount.Name = accountToUpdate.Name;
             exsistingAccount.Color = accountToUpdate.Color;
@@ -87,6 +94,11 @@ namespace MoneyPilot.Controllers
             if(account == null)
             {
                 return NotFound("Requested account not found");
+            }
+
+            if (!await _authService.ValidateUserOwnership(User, account.OwnerId))
+            {
+                return Unauthorized("You are not authorized to perform actions on this account");
             }
 
             _context.Remove<Account>(account);

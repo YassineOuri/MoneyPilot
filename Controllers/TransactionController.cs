@@ -28,10 +28,9 @@ namespace MoneyPilot.Controllers
 
         public async Task<ActionResult<List<Transaction>>> GetTransactions(int UserId)
         {
-            ClaimsPrincipal loggedInUser = User;
-            int loggedInUserId = await _authService.getCurrentUserID(loggedInUser);
+         
 
-            if(loggedInUserId != UserId)
+            if(!await _authService.ValidateUserOwnership(User, UserId))
             {
                 return Unauthorized("You are not authorized to perform this action");
             }
@@ -46,6 +45,17 @@ namespace MoneyPilot.Controllers
         [HttpGet("account/{AccountId}")]
         public async Task<ActionResult<List<Transaction>>> GetTransactionsByAccount(int AccountId)
         {
+            var account = await _context.Accounts.FindAsync(AccountId);
+            if (account == null)
+            {
+                return NotFound("Account not found");
+            }
+
+            if (!await _authService.ValidateUserOwnership(User, account.OwnerId))
+            {
+                return Unauthorized("You are not authorized to perform this action");
+            }
+
             var transactions = await _context.Transactions.Where(t => t.AccountId == AccountId).ToListAsync();
             return Ok(transactions);
         }
@@ -64,6 +74,17 @@ namespace MoneyPilot.Controllers
 
                 ClaimsPrincipal currentUser = User;
                 int userId = await _authService.getCurrentUserID(currentUser);
+
+                var account = await _context.Accounts.FindAsync(transaction.AccountId);
+                if (account == null)
+                {
+                    return NotFound("Account not found");
+                }
+
+                if (!await _authService.ValidateUserOwnership(User, account.OwnerId))
+                {
+                    return Unauthorized("You are not authorized to add transactions to this account");
+                }
 
                 var newTransaction = new Transaction(
                     transaction.Amount,
@@ -100,7 +121,7 @@ namespace MoneyPilot.Controllers
 
         [Authorize]
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<Transaction>> updateTransaction([FromBody] UpdateTransactionDTO transactionToUpdate, int id)
+        public async Task<ActionResult<Transaction>> UpdateTransaction([FromBody] UpdateTransactionDTO transactionToUpdate, int id)
         {
             if (!ModelState.IsValid)
             {
@@ -108,16 +129,13 @@ namespace MoneyPilot.Controllers
             }
 
             var existingTransaction = await _context.Transactions.FindAsync(id);
-            ClaimsPrincipal loggedInUser = User;
-            int loggedInUserID = await _authService.getCurrentUserID(loggedInUser);
-
 
             if (existingTransaction == null)
             {
                 return NotFound("Requested transaction not found");
             }
 
-            if (loggedInUserID != existingTransaction.OwnerId)
+            if (!await _authService.ValidateUserOwnership(User, existingTransaction.OwnerId))
             {
                 return Unauthorized("You are not authorized to perform actions on this transaction");
             }
@@ -140,7 +158,7 @@ namespace MoneyPilot.Controllers
                 await _context.SaveChangesAsync();
                 await databaseTransaction.CommitAsync();
 
-                return CreatedAtAction(nameof(updateTransaction), new { existingTransaction.Id }, existingTransaction);
+                return CreatedAtAction(nameof(UpdateTransaction), new { existingTransaction.Id }, existingTransaction);
 
 
 
@@ -169,15 +187,13 @@ namespace MoneyPilot.Controllers
             try
             {
                 var existingTransaction = await _context.Transactions.FindAsync(id);
-                ClaimsPrincipal loggedInUser = User;
-                int loggedInUserID = await _authService.getCurrentUserID(loggedInUser);
 
                 if (existingTransaction == null)
                 {
                     return NotFound("Requested transaction not found");
                 }
 
-                if (loggedInUserID != existingTransaction.OwnerId)
+                if (!await _authService.ValidateUserOwnership(User, existingTransaction.OwnerId))
                 {
                     return Unauthorized("You are not authorized to perform actions on this transaction");
                 }
