@@ -45,19 +45,10 @@ namespace MoneyPilot.Data
 
 
             modelBuilder.Entity<Category>()
-                .HasMany(e => e.Transactions)
-                .WithOne(e => e.Category)
-                .HasForeignKey(e => e.CategoryId)
-                .IsRequired(true)
-                .OnDelete(DeleteBehavior.Restrict);
-
-
-            modelBuilder.Entity<Category>()
-                .HasMany(e => e.SubCategories)
-                .WithOne(e => e.ParentCategory)
-                .HasForeignKey(e => e.ParentCategoryId)
-                .IsRequired(true)
-                .OnDelete(DeleteBehavior.Cascade);
+            .HasOne(c => c.ParentCategory)
+            .WithMany(c => c.SubCategories)
+            .HasForeignKey(c => c.ParentCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
 
 
 

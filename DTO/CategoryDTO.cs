@@ -1,6 +1,10 @@
 using MoneyPilot.Enums;
+using MoneyPilot.Models;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 namespace MoneyPilot.DTO
 {
@@ -22,8 +26,11 @@ namespace MoneyPilot.DTO
 
         public bool IsVisible { get; set; } = true;
 
-        [Required(ErrorMessage = "Parent category ID is required")]
-        public required int ParentCategoryId { get; set; }
+        public int? ParentCategoryId { get; set; }
+
+
+        [JsonIgnore]
+        public ICollection<Category>? SubCategories { get; set; }
     }
 }
 

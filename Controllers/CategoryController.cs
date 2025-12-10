@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Any;
 using MoneyPilot.Data;
 using MoneyPilot.DTO;
 using MoneyPilot.Models;
@@ -23,7 +24,6 @@ namespace MoneyPilot.Controllers
         public async Task<ActionResult<List<Category>>> GetCategories()
         {
             List<Category> categories = await _context.Categories
-                .Include(c => c.SubCategories)
                 .Where(c => c.IsVisible)
                 .ToListAsync();
             return Ok(categories);
@@ -47,10 +47,11 @@ namespace MoneyPilot.Controllers
         }
 
         [Authorize]
-        [HttpGet("parent/{parentId:int}")]
+        [HttpGet("sub/{parentId:int}")]
         public async Task<ActionResult<List<Category>>> GetSubCategories(int parentId)
         {
             var parentCategory = await _context.Categories.FindAsync(parentId);
+
             if (parentCategory == null)
             {
                 return NotFound("Parent category not found");
@@ -58,6 +59,11 @@ namespace MoneyPilot.Controllers
 
             var subCategories = await _context.Categories
                 .Where(c => c.ParentCategoryId == parentId && c.IsVisible)
+                .Select(c => new { 
+                    c.Name,
+                    c.CategoryNature,
+                    c.Icon
+                })
                 .ToListAsync();
 
             return Ok(subCategories);
@@ -68,7 +74,8 @@ namespace MoneyPilot.Controllers
         public async Task<ActionResult<List<Category>>> GetRootCategories()
         {
             var rootCategories = await _context.Categories
-                .Where(c => c.ParentCategoryId == c.Id && c.IsVisible)
+                .Where(c => c.ParentCategoryId == null && c.IsVisible)
+                .Include(c => c.SubCategories)
                 .ToListAsync();
 
             return Ok(rootCategories);
@@ -83,24 +90,23 @@ namespace MoneyPilot.Controllers
                 return BadRequest(ModelState);
             }
 
-            var parentCategory = await _context.Categories.FindAsync(category.ParentCategoryId);
-            if (parentCategory == null)
-            {
-                return NotFound("Parent category not found");
-            }
 
             var newCategory = new Category(
                 category.Name,
                 category.Icon,
                 category.CategoryNature,
                 category.IsVisible
+                
+               
             );
+
             newCategory.ParentCategoryId = category.ParentCategoryId;
+               
 
             _context.Categories.Add(newCategory);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetCategory), new { id = newCategory.Id }, newCategory);
+            return CreatedAtAction(nameof(AddCategory), new { id = newCategory.Id }, newCategory);
         }
 
         [Authorize]
@@ -129,11 +135,17 @@ namespace MoneyPilot.Controllers
                 return BadRequest("Category cannot be its own parent");
             }
 
-            var isCircular = await IsCircularReference(id, categoryToUpdate.ParentCategoryId);
-            if (isCircular)
+            ICollection<Category> subCategories = categoryToUpdate.SubCategories ?? [];
+
+            if(subCategories.Count > 0)
             {
-                return BadRequest("Cannot set parent category: would create circular reference");
-            }
+                var subCategoriesIds = subCategories.Select(s => s.Id).ToList();
+                if(subCategoriesIds.Contains(categoryToUpdate.Id))
+                {
+                    return BadRequest("Category's Parent cannot be one of its children");
+                }
+            } 
+
 
             existingCategory.Name = categoryToUpdate.Name;
             existingCategory.Icon = categoryToUpdate.Icon;
@@ -143,7 +155,7 @@ namespace MoneyPilot.Controllers
 
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetCategory), new { id = existingCategory.Id }, existingCategory);
+            return CreatedAtAction(nameof(UpdateCategory), new { id = existingCategory.Id }, existingCategory);
         }
 
         [Authorize]
@@ -176,7 +188,7 @@ namespace MoneyPilot.Controllers
             return Ok($"Category of Id {category.Id} deleted successfully");
         }
 
-        private async Task<bool> IsCircularReference(int categoryId, int potentialParentId)
+        /** private async Task<bool> IsCircularReference(int categoryId, int potentialParentId)
         {
             var currentParentId = potentialParentId;
             var visited = new HashSet<int> { categoryId };
@@ -200,7 +212,7 @@ namespace MoneyPilot.Controllers
             }
 
             return currentParentId == categoryId;
-        }
+        }**/
     }
 }
 

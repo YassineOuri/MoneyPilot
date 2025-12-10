@@ -15,17 +15,13 @@ namespace MoneyPilot.Models
 
         public CategoryNature CategoryNature { get; set; } = CategoryNature.NONE;
 
+        [JsonIgnore]
         public bool IsVisible { get; set; } = true;
 
-        public int ParentCategoryId { get; set; }
-
-        [ForeignKey("ParentCategoryId")]
         [JsonIgnore]
+        public int? ParentCategoryId { get; set; }
         public Category? ParentCategory { get; set; }
-
-        [InverseProperty("ParentCategory")]
-        [JsonIgnore]
-        public ICollection<Category>? SubCategories { get; set; } = [];
+        public ICollection<Category> SubCategories { get; set; }
 
         [InverseProperty("Category")]
         [JsonIgnore]
