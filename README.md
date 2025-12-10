@@ -6,7 +6,8 @@ A personal finance management REST API built with ASP.NET Core that helps users 
 
 - 🔐 **User Authentication** - JWT-based authentication with secure password hashing
 - 💰 **Account Management** - Create, read, update, and delete financial accounts
-- 📊 **Transaction Tracking** - Record income and expense transactions
+- 📊 **Transaction Tracking** - Record income and expense transactions with category classification
+- 🏷️ **Category Management** - Hierarchical category system with parent-child relationships for organizing transactions
 - 🔒 **Authorization** - Users can only access their own accounts and transactions
 - 📝 **Swagger Documentation** - Interactive API documentation with Swagger UI
 
@@ -101,10 +102,41 @@ The API will be available at:
 - `PUT /api/transactions/{id}` - Update a transaction
 - `DELETE /api/transactions/{id}` - Delete a transaction
 
+### Categories (`/api/categories`)
+
+- `GET /api/categories` - Get all visible categories
+- `GET /api/categories/{id}` - Get a specific category with subcategories and parent
+- `GET /api/categories/sub/{parentId}` - Get all subcategories for a parent category
+- `GET /api/categories/root` - Get all root categories (categories without a parent)
+- `POST /api/categories` - Create a new category
+- `PUT /api/categories/{id}` - Update a category
+- `DELETE /api/categories/{id}` - Delete a category (only if it has no subcategories or transactions)
+
 **Note:** Most endpoints require JWT authentication. Include the token in the Authorization header:
 ```
 Authorization: Bearer {your-jwt-token}
 ```
+
+## Category Feature
+
+The category system allows you to organize transactions hierarchically with parent and subcategories. Categories support:
+
+- **Hierarchical Structure** - Categories can have parent categories and multiple subcategories
+- **Category Nature** - Each category can be classified as:
+  - `WANT` - Non-essential purchases
+  - `NEED` - Essential but flexible expenses
+  - `MUST` - Critical, non-negotiable expenses
+  - `NONE` - Unclassified
+- **Icons** - Optional icon support for visual representation
+- **Visibility Control** - Categories can be hidden from listings while preserving data integrity
+- **Transaction Association** - Transactions are linked to categories for better organization and reporting
+
+### Category Constraints
+
+- Categories with subcategories cannot be deleted
+- Categories used in transactions cannot be deleted
+- A category cannot be its own parent
+- Circular parent-child relationships are prevented
 
 ## Project Structure
 
@@ -113,15 +145,23 @@ MoneyPilot/
 ├── Controllers/          # API controllers
 │   ├── AccountController.cs
 │   ├── AuthController.cs
+│   ├── CategoryController.cs
 │   └── TransactionController.cs
 ├── Data/                 # Database context
 │   └── ApplicationDbContext.cs
 ├── DTO/                  # Data Transfer Objects
 │   ├── AccountDTO.cs
+│   ├── CategoryDTO.cs
 │   ├── Transactions/
 │   └── UserLoginDTO.cs
+├── Enums/                # Enumeration types
+│   ├── AccountCurrency.cs
+│   ├── AccountType.cs
+│   ├── CategoryNature.cs
+│   └── TransactionType.cs
 ├── Models/               # Entity models
 │   ├── Account.cs
+│   ├── Category.cs
 │   ├── Transaction.cs
 │   └── User.cs
 ├── Services/             # Business logic services
